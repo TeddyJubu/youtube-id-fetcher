@@ -1,0 +1,24 @@
+{
+    "manifest_version": 3,
+    "name": "YouTube Video ID Fetcher",
+    "version": "1.0",
+    "description": "Fetches YouTube video ID from current page",
+    "permissions": [
+      "activeTab",
+      "scripting",
+      "webRequest"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://*.youtube.com/*"],
+        "js": ["content.js"]
+      }
+    ],
+    "action": {
+      "default_title": "Get YouTube Video ID",
+      "default_popup": "popup.html"
+    }
+  }
