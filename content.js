@@ -47,13 +47,110 @@ function sendVideoIdToServer(videoId) {
 }
 
 function displaySummary(summary) {
-    // Add Google Font
-    const fontLink = document.createElement('link');
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap';
-    fontLink.rel = 'stylesheet';
-    document.head.appendChild(fontLink);
+    // Convert common markdown syntax to HTML
+    const htmlContent = convertMarkdownToHTML(summary);
+    renderSummaryWithStyles(htmlContent, summary); // Pass the original summary text
+}
 
-    console.log('Display summary called with:', summary);
+function convertMarkdownToHTML(markdown) {
+    // Simple markdown to HTML converter
+    return markdown
+        // Convert headers
+        .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+        // Convert bold
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        // Convert italic
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Convert lists
+        .replace(/^\- (.*$)/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+        // Convert code blocks
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        // Convert blockquotes
+        .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+        // Convert paragraphs
+        .replace(/\n\n(.*)/g, '<p>$1</p>')
+        // Convert line breaks
+        .replace(/\n/g, '<br>');
+}
+
+function renderSummaryWithStyles(htmlContent, originalText) { // Add originalText parameter
+    // Add required styles if not already present
+    if (!document.getElementById('summary-styles')) {
+        const styleSheet = document.createElement('style');
+        styleSheet.id = 'summary-styles';
+        styleSheet.textContent = `
+            .summary-content {
+                font-family: Arial, sans-serif;
+                line-height: 1.8;
+                color: #4A4A4A;
+            }
+            
+            .summary-content h1, 
+            .summary-content h2, 
+            .summary-content h3 {
+                margin-top: 24px;
+                margin-bottom: 16px;
+                font-weight: 600;
+                line-height: 1.25;
+            }
+            
+            .summary-content h1 {
+                font-size: 24px;
+                border-bottom: 2px solid #D9A05B;
+                padding-bottom: 8px;
+            }
+            
+            .summary-content h2 {
+                font-size: 20px;
+            }
+            
+            .summary-content h3 {
+                font-size: 18px;
+            }
+            
+            .summary-content p {
+                margin-bottom: 16px;
+            }
+            
+            .summary-content ul {
+                margin-bottom: 16px;
+                padding-left: 24px;
+            }
+            
+            .summary-content li {
+                margin: 8px 0;
+            }
+            
+            .summary-content code {
+                background-color: rgba(217, 160, 91, 0.1);
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: monospace;
+                font-size: 14px;
+            }
+            
+            .summary-content blockquote {
+                border-left: 4px solid #D9A05B;
+                margin: 16px 0;
+                padding: 8px 16px;
+                background-color: rgba(217, 160, 91, 0.05);
+            }
+            
+            .summary-content strong {
+                font-weight: 600;
+            }
+            
+            .summary-content em {
+                font-style: italic;
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    }
+
+    // Find container and render summary
     const videoInfo = document.querySelector('#above-the-fold');
     if (!videoInfo) {
         console.error('Could not find #above-the-fold to display summary');
@@ -61,10 +158,15 @@ function displaySummary(summary) {
     }
 
     if (document.getElementById('video-summary')) {
-        console.log('Summary already displayed, skipping');
-        return;
+        console.log('Summary already displayed, updating content');
+        const contentDiv = document.querySelector('#video-summary .summary-content');
+        if (contentDiv) {
+            contentDiv.innerHTML = htmlContent;
+            return;
+        }
     }
 
+    // Create summary container
     const summaryDiv = document.createElement('div');
     summaryDiv.id = 'video-summary';
     Object.assign(summaryDiv.style, {
@@ -74,13 +176,10 @@ function displaySummary(summary) {
         border: '1px solid #D9A05B',
         borderRadius: '12px',
         fontSize: '16px',
-        lineHeight: '1.8',
-        fontFamily: '"Libre Baskerville", serif',
-        color: '#4A4A4A',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
     });
 
-    // Create header with copy button
+    // Create header with copy button - pass the original text
     const headerDiv = document.createElement('div');
     Object.assign(headerDiv.style, {
         display: 'flex',
@@ -94,6 +193,22 @@ function displaySummary(summary) {
     const titleSpan = document.createElement('span');
     titleSpan.innerHTML = '<strong style="font-size: 20px; color: #4A4A4A;">Video Summary</strong>';
 
+    const copyButton = createCopyButton(originalText); // Pass the original text for copying
+    headerDiv.appendChild(titleSpan);
+    headerDiv.appendChild(copyButton);
+
+    // Content div with HTML content
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'summary-content';
+    contentDiv.innerHTML = htmlContent;
+
+    summaryDiv.appendChild(headerDiv);
+    summaryDiv.appendChild(contentDiv);
+    videoInfo.appendChild(summaryDiv);
+    console.log('Summary displayed successfully');
+}
+
+function createCopyButton(textToCopy) {
     const copyButton = document.createElement('button');
     Object.assign(copyButton.style, {
         backgroundColor: '#D9A05B',
@@ -109,7 +224,6 @@ function displaySummary(summary) {
         transition: 'all 0.2s ease'
     });
 
-    // Add copy icon and text
     copyButton.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
@@ -125,7 +239,7 @@ function displaySummary(summary) {
     };
 
     copyButton.onclick = () => {
-        navigator.clipboard.writeText(summary);
+        navigator.clipboard.writeText(textToCopy);
         copyButton.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 6L9 17l-5-5"/>
@@ -143,27 +257,7 @@ function displaySummary(summary) {
         }, 2000);
     };
 
-    headerDiv.appendChild(titleSpan);
-    headerDiv.appendChild(copyButton);
-
-    const contentDiv = document.createElement('div');
-    Object.assign(contentDiv.style, {
-        marginTop: '15px',
-        fontSize: '16px',
-        lineHeight: '1.8',
-        color: '#4A4A4A',
-        fontFamily: '"Libre Baskerville", serif'
-    });
-    
-    // Format the summary text with proper paragraphs
-    contentDiv.innerHTML = summary.split('\n\n').map(paragraph => 
-        `<p style="margin-bottom: 15px;">${paragraph}</p>`
-    ).join('');
-
-    summaryDiv.appendChild(headerDiv);
-    summaryDiv.appendChild(contentDiv);
-    videoInfo.appendChild(summaryDiv);
-    console.log('Summary displayed successfully');
+    return copyButton;
 }
 
 function injectExtractButton(videoId) {
