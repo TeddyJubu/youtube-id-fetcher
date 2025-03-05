@@ -20,3 +20,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.action.onClicked.addListener((tab) => {
     console.log("Extension clicked, current video ID:", currentVideoId);
 });
+
+// background.js
+console.log("Background script running");
