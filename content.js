@@ -47,6 +47,12 @@ function sendVideoIdToServer(videoId) {
 }
 
 function displaySummary(summary) {
+    // Add Google Font
+    const fontLink = document.createElement('link');
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap';
+    fontLink.rel = 'stylesheet';
+    document.head.appendChild(fontLink);
+
     console.log('Display summary called with:', summary);
     const videoInfo = document.querySelector('#above-the-fold');
     if (!videoInfo) {
@@ -61,44 +67,98 @@ function displaySummary(summary) {
 
     const summaryDiv = document.createElement('div');
     summaryDiv.id = 'video-summary';
-    summaryDiv.style.marginTop = '20px';
-    summaryDiv.style.padding = '20px';
-    summaryDiv.style.backgroundColor = '#f9f9f9';
-    summaryDiv.style.border = '1px solid #ddd';
-    summaryDiv.style.borderRadius = '8px';
-    summaryDiv.style.fontSize = '16px';
-    summaryDiv.style.lineHeight = '1.6';
+    Object.assign(summaryDiv.style, {
+        marginTop: '20px',
+        padding: '25px',
+        backgroundColor: '#FAF3E0',
+        border: '1px solid #D9A05B',
+        borderRadius: '12px',
+        fontSize: '16px',
+        lineHeight: '1.8',
+        fontFamily: '"Libre Baskerville", serif',
+        color: '#4A4A4A',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    });
 
     // Create header with copy button
     const headerDiv = document.createElement('div');
-    headerDiv.style.display = 'flex';
-    headerDiv.style.justifyContent = 'space-between';
-    headerDiv.style.alignItems = 'center';
-    headerDiv.style.marginBottom = '15px';
+    Object.assign(headerDiv.style, {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px',
+        borderBottom: '2px solid #D9A05B',
+        paddingBottom: '10px'
+    });
 
     const titleSpan = document.createElement('span');
-    titleSpan.innerHTML = '<strong style="font-size: 18px;">Summary</strong>';
+    titleSpan.innerHTML = '<strong style="font-size: 20px; color: #4A4A4A;">Video Summary</strong>';
 
     const copyButton = document.createElement('button');
-    copyButton.innerHTML = '📋';
-    copyButton.style.border = 'none';
-    copyButton.style.background = 'transparent';
-    copyButton.style.fontSize = '18px';
-    copyButton.style.cursor = 'pointer';
-    copyButton.style.padding = '5px';
-    copyButton.title = 'Copy summary';
+    Object.assign(copyButton.style, {
+        backgroundColor: '#D9A05B',
+        color: '#FAF3E0',
+        border: 'none',
+        borderRadius: '6px',
+        padding: '8px 12px',
+        cursor: 'pointer',
+        fontSize: '14px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        transition: 'all 0.2s ease'
+    });
+
+    // Add copy icon and text
+    copyButton.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        </svg>
+        <span>Copy</span>`;
+
+    copyButton.onmouseover = () => {
+        copyButton.style.backgroundColor = '#C08A4A';
+    };
+    copyButton.onmouseout = () => {
+        copyButton.style.backgroundColor = '#D9A05B';
+    };
+
     copyButton.onclick = () => {
         navigator.clipboard.writeText(summary);
-        copyButton.innerHTML = '✓';
-        setTimeout(() => copyButton.innerHTML = '📋', 2000);
+        copyButton.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            <span>Copied!</span>`;
+        copyButton.style.backgroundColor = '#68A357';
+        setTimeout(() => {
+            copyButton.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                <span>Copy</span>`;
+            copyButton.style.backgroundColor = '#D9A05B';
+        }, 2000);
     };
 
     headerDiv.appendChild(titleSpan);
     headerDiv.appendChild(copyButton);
 
     const contentDiv = document.createElement('div');
-    contentDiv.textContent = summary;
-    contentDiv.style.marginTop = '10px';
+    Object.assign(contentDiv.style, {
+        marginTop: '15px',
+        fontSize: '16px',
+        lineHeight: '1.8',
+        color: '#4A4A4A',
+        fontFamily: '"Libre Baskerville", serif'
+    });
+    
+    // Format the summary text with proper paragraphs
+    contentDiv.innerHTML = summary.split('\n\n').map(paragraph => 
+        `<p style="margin-bottom: 15px;">${paragraph}</p>`
+    ).join('');
 
     summaryDiv.appendChild(headerDiv);
     summaryDiv.appendChild(contentDiv);
@@ -141,37 +201,33 @@ function injectExtractButton(videoId) {
         // Create a container for the button
         const buttonContainer = document.createElement('div');
         buttonContainer.id = 'extract-button-container';
-        buttonContainer.style.padding = '10px';
-        buttonContainer.style.marginTop = '10px';
-        buttonContainer.style.marginBottom = '10px';
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'flex-start';
+        Object.assign(buttonContainer.style, {
+            padding: '10px',
+            marginTop: '10px',
+            marginBottom: '10px',
+            display: 'flex',
+            justifyContent: 'flex-start'
+        });
 
         const extractButton = document.createElement('button');
         extractButton.id = 'extract-button';
-        extractButton.style.backgroundColor = '#065fd4';
-        extractButton.style.color = 'white';
-        extractButton.style.border = 'none';
-        extractButton.style.padding = '8px 16px';
-        extractButton.style.borderRadius = '18px';
-        extractButton.style.cursor = 'pointer';
-        extractButton.style.fontFamily = 'Roboto, Arial, sans-serif';
-        extractButton.style.fontSize = '14px';
-        extractButton.style.fontWeight = '500';
-        extractButton.style.display = 'flex';
-        extractButton.style.alignItems = 'center';
-        extractButton.style.gap = '8px';
-        extractButton.style.transition = 'background-color 0.2s';
-
-        // Add loading spinner (hidden by default)
-        const spinner = document.createElement('div');
-        spinner.style.width = '14px';
-        spinner.style.height = '14px';
-        spinner.style.border = '2px solid #ffffff';
-        spinner.style.borderTop = '2px solid transparent';
-        spinner.style.borderRadius = '50%';
-        spinner.style.display = 'none';
-        spinner.style.animation = 'spin 1s linear infinite';
+        Object.assign(extractButton.style, {
+            backgroundColor: '#FAF3E0',
+            color: '#4A4A4A',
+            border: '2px solid #D9A05B',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontFamily: '"Libre Baskerville", serif',
+            fontSize: '14px',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+        });
 
         // Add CSS animation
         const style = document.createElement('style');
@@ -180,8 +236,35 @@ function injectExtractButton(videoId) {
                 0% { transform: rotate(0deg); }
                 100% { transform: rotate(360deg); }
             }
+            
+            @keyframes slideIn {
+                0% { transform: translateY(-100%); opacity: 0; }
+                100% { transform: translateY(0); opacity: 1; }
+            }
+            
+            @keyframes checkmark {
+                0% { transform: scale(0); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+            
+            .completion-animation {
+                animation: checkmark 0.5s ease-in-out forwards;
+            }
         `;
         document.head.appendChild(style);
+
+        // Add loading spinner (hidden by default)
+        const spinner = document.createElement('div');
+        Object.assign(spinner.style, {
+            width: '16px',
+            height: '16px',
+            border: '2px solid #D9A05B',
+            borderTop: '2px solid transparent',
+            borderRadius: '50%',
+            display: 'none',
+            animation: 'spin 1s linear infinite'
+        });
 
         const buttonText = document.createElement('span');
         buttonText.textContent = 'Generate Summary';
@@ -189,29 +272,67 @@ function injectExtractButton(videoId) {
         extractButton.appendChild(spinner);
         extractButton.appendChild(buttonText);
 
-        extractButton.onmouseover = () => extractButton.style.backgroundColor = '#0b5ed7';
-        extractButton.onmouseout = () => extractButton.style.backgroundColor = '#065fd4';
+        // Hover effects
+        extractButton.onmouseover = () => {
+            extractButton.style.backgroundColor = '#D9A05B';
+            extractButton.style.color = '#FAF3E0';
+            extractButton.style.transform = 'translateY(-1px)';
+            extractButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        };
+        
+        extractButton.onmouseout = () => {
+            extractButton.style.backgroundColor = '#FAF3E0';
+            extractButton.style.color = '#4A4A4A';
+            extractButton.style.transform = 'translateY(0)';
+            extractButton.style.boxShadow = 'none';
+        };
+
         extractButton.onclick = () => {
             const currentVideoId = getVideoId();
-            console.log('Current video ID:', currentVideoId);
-            
             if (!currentVideoId) {
                 console.error('No video ID found');
                 alert('No video ID found');
                 return;
             }
             
+            // Button loading state
             extractButton.disabled = true;
             buttonText.textContent = 'Generating...';
-            spinner.style.display = 'block';
-            extractButton.style.backgroundColor = '#cccccc';
+            spinner.style.display = 'inline-block';
+            extractButton.style.backgroundColor = '#FAF3E0';
+            extractButton.style.opacity = '0.7';
             
             sendVideoIdToServer(currentVideoId)
-                .finally(() => {
+                .then(() => {
+                    // Success animation
+                    spinner.style.display = 'none';
+                    buttonText.textContent = 'Summary Generated!';
+                    
+                    // Create checkmark icon
+                    const checkmark = document.createElement('div');
+                    checkmark.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D9A05B" stroke-width="3">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>`;
+                    checkmark.style.display = 'inline-flex';
+                    checkmark.classList.add('completion-animation');
+                    
+                    extractButton.insertBefore(checkmark, buttonText);
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        extractButton.disabled = false;
+                        buttonText.textContent = 'Generate Summary';
+                        checkmark.remove();
+                        extractButton.style.opacity = '1';
+                    }, 2000);
+                })
+                .catch(() => {
+                    // Error state
                     extractButton.disabled = false;
                     buttonText.textContent = 'Generate Summary';
                     spinner.style.display = 'none';
-                    extractButton.style.backgroundColor = '#065fd4';
+                    extractButton.style.opacity = '1';
                 });
         };
 
