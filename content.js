@@ -61,20 +61,53 @@ function displaySummary(summary) {
 
     const summaryDiv = document.createElement('div');
     summaryDiv.id = 'video-summary';
-    summaryDiv.style.marginTop = '10px';
-    summaryDiv.style.padding = '10px';
+    summaryDiv.style.marginTop = '20px';
+    summaryDiv.style.padding = '20px';
     summaryDiv.style.backgroundColor = '#f9f9f9';
     summaryDiv.style.border = '1px solid #ddd';
-    summaryDiv.style.borderRadius = '4px';
-    summaryDiv.innerHTML = `<strong>Summary:</strong> ${summary}`;
+    summaryDiv.style.borderRadius = '8px';
+    summaryDiv.style.fontSize = '16px';
+    summaryDiv.style.lineHeight = '1.6';
+
+    // Create header with copy button
+    const headerDiv = document.createElement('div');
+    headerDiv.style.display = 'flex';
+    headerDiv.style.justifyContent = 'space-between';
+    headerDiv.style.alignItems = 'center';
+    headerDiv.style.marginBottom = '15px';
+
+    const titleSpan = document.createElement('span');
+    titleSpan.innerHTML = '<strong style="font-size: 18px;">Summary</strong>';
+
+    const copyButton = document.createElement('button');
+    copyButton.innerHTML = '📋';
+    copyButton.style.border = 'none';
+    copyButton.style.background = 'transparent';
+    copyButton.style.fontSize = '18px';
+    copyButton.style.cursor = 'pointer';
+    copyButton.style.padding = '5px';
+    copyButton.title = 'Copy summary';
+    copyButton.onclick = () => {
+        navigator.clipboard.writeText(summary);
+        copyButton.innerHTML = '✓';
+        setTimeout(() => copyButton.innerHTML = '📋', 2000);
+    };
+
+    headerDiv.appendChild(titleSpan);
+    headerDiv.appendChild(copyButton);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.textContent = summary;
+    contentDiv.style.marginTop = '10px';
+
+    summaryDiv.appendChild(headerDiv);
+    summaryDiv.appendChild(contentDiv);
     videoInfo.appendChild(summaryDiv);
     console.log('Summary displayed successfully');
 }
 
 function injectExtractButton(videoId) {
-    // Wait for YouTube's content to load
     setTimeout(() => {
-        // Try multiple selectors in order of preference
         const possibleContainers = [
             '#above-the-fold',
             '#top-row',
@@ -96,7 +129,6 @@ function injectExtractButton(videoId) {
 
         if (!container) {
             console.error('Could not find suitable container for extract button');
-            // Retry after a longer delay
             setTimeout(() => injectExtractButton(videoId), 2000);
             return;
         }
@@ -109,32 +141,58 @@ function injectExtractButton(videoId) {
         // Create a container for the button
         const buttonContainer = document.createElement('div');
         buttonContainer.id = 'extract-button-container';
-        buttonContainer.style.padding = '12px';
+        buttonContainer.style.padding = '10px';
         buttonContainer.style.marginTop = '10px';
         buttonContainer.style.marginBottom = '10px';
-        buttonContainer.style.backgroundColor = '#f8f8f8';
-        buttonContainer.style.borderRadius = '8px';
-        buttonContainer.style.width = '100%';
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'flex-start';
 
         const extractButton = document.createElement('button');
         extractButton.id = 'extract-button';
-        extractButton.textContent = 'Generate Summary';
         extractButton.style.backgroundColor = '#065fd4';
         extractButton.style.color = 'white';
         extractButton.style.border = 'none';
-        extractButton.style.padding = '10px 20px';
+        extractButton.style.padding = '8px 16px';
         extractButton.style.borderRadius = '18px';
         extractButton.style.cursor = 'pointer';
         extractButton.style.fontFamily = 'Roboto, Arial, sans-serif';
         extractButton.style.fontSize = '14px';
         extractButton.style.fontWeight = '500';
-        extractButton.style.width = '100%';
+        extractButton.style.display = 'flex';
+        extractButton.style.alignItems = 'center';
+        extractButton.style.gap = '8px';
         extractButton.style.transition = 'background-color 0.2s';
+
+        // Add loading spinner (hidden by default)
+        const spinner = document.createElement('div');
+        spinner.style.width = '14px';
+        spinner.style.height = '14px';
+        spinner.style.border = '2px solid #ffffff';
+        spinner.style.borderTop = '2px solid transparent';
+        spinner.style.borderRadius = '50%';
+        spinner.style.display = 'none';
+        spinner.style.animation = 'spin 1s linear infinite';
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        const buttonText = document.createElement('span');
+        buttonText.textContent = 'Generate Summary';
+
+        extractButton.appendChild(spinner);
+        extractButton.appendChild(buttonText);
 
         extractButton.onmouseover = () => extractButton.style.backgroundColor = '#0b5ed7';
         extractButton.onmouseout = () => extractButton.style.backgroundColor = '#065fd4';
         extractButton.onclick = () => {
-            const currentVideoId = getVideoId(); // Get fresh video ID
+            const currentVideoId = getVideoId();
             console.log('Current video ID:', currentVideoId);
             
             if (!currentVideoId) {
@@ -144,20 +202,21 @@ function injectExtractButton(videoId) {
             }
             
             extractButton.disabled = true;
-            extractButton.textContent = 'Generating Summary...';
+            buttonText.textContent = 'Generating...';
+            spinner.style.display = 'block';
             extractButton.style.backgroundColor = '#cccccc';
             
             sendVideoIdToServer(currentVideoId)
                 .finally(() => {
                     extractButton.disabled = false;
-                    extractButton.textContent = 'Generate Summary';
+                    buttonText.textContent = 'Generate Summary';
+                    spinner.style.display = 'none';
                     extractButton.style.backgroundColor = '#065fd4';
                 });
         };
 
         buttonContainer.appendChild(extractButton);
         
-        // Try to insert at the beginning of the container
         if (container.firstChild) {
             container.insertBefore(buttonContainer, container.firstChild);
         } else {
@@ -165,7 +224,7 @@ function injectExtractButton(videoId) {
         }
         
         console.log('Extract button injected successfully');
-    }, 1000); // Initial delay to ensure YouTube's content is loaded
+    }, 1000);
 }
 
 // Update the observer to be more specific
